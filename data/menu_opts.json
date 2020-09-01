@@ -1,0 +1,10 @@
+{
+    "nombreApp": "Componentes",
+    "rutas": [
+        {
+            "ruta": "/",
+            "icon": "home",
+            "texto": "home"
+        }
+    ]
+}
