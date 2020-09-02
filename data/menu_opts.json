@@ -3,6 +3,11 @@
     "rutas": [
         {
             "ruta": "/",
+            "icon": "",
+            "texto": "home"
+        },
+        {
+            "ruta": "/home",
             "icon": "home",
             "texto": "home"
         }
