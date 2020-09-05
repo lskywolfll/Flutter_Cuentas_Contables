@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'dart:convert' as convert;
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -9,6 +12,19 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   String _email = "";
   String _password = "";
+  String _api = "http://3.17.182.71:49165";
+  bool logeando = false;
+
+  @override
+  void initState() async {
+    // TODO: implement initState
+    super.initState();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.get('token');
+    if (token != null) {
+      Navigator.of(context).pushNamed('/home');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,14 +48,49 @@ class _LoginPageState extends State<LoginPage> {
             SizedBox(height: 30.0),
             _inputPassword(),
             SizedBox(height: 15.0),
-            _buttonLogin()
+            _buttonLogin(context)
           ],
         ),
       ),
     );
   }
 
-  Future<Map> _Logearse() {}
+  Future<Map> _Logearse(BuildContext context) async {
+    http.Response response = await http
+        .post(_api + "/Login", body: {'email': _email, 'password': _password});
+
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    Map<String, dynamic> data = convert.jsonDecode(response.body);
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.get('token');
+
+    if (token == null) {
+      await prefs.setString('token', data['token']);
+      Navigator.of(context).pushNamed('/home');
+    } else {
+      Navigator.of(context).pushNamed('/home');
+    }
+  }
+
+  void _mostrarAlert(BuildContext context, token) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+          title: Text('Login'),
+          content: Column(
+            children: <Widget>[Text('Este es tu token $token')],
+          ),
+        );
+      },
+    );
+  }
 
   Widget _inputEmail() {
     return TextField(
@@ -76,9 +127,11 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buttonLogin() {
+  Widget _buttonLogin(BuildContext context) {
     return FlatButton(
-      onPressed: () {},
+      onPressed: () {
+        _Logearse(context);
+      },
       color: Colors.blueAccent,
       child: Text('Logearse'),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
